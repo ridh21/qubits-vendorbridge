@@ -84,7 +84,7 @@ export function AppSidebar({
       <SidebarFooter>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg">
+            <SidebarMenuButton size="lg" render={<Link href="/profile" />}>
               <div className="bg-muted text-foreground flex aspect-square size-8 items-center justify-center rounded-full text-xs font-medium">
                 {user.name.slice(0, 1).toUpperCase()}
               </div>

@@ -35,10 +35,10 @@ function generatePassword(length = 14) {
 type Props =
   | { mode: "create"; vendors: { id: string; name: string }[]; user?: undefined }
   | {
-      mode: "edit"
-      vendors: { id: string; name: string }[]
-      user: { id: string; name: string; email: string; role: Role; vendorId: string | null }
-    }
+    mode: "edit"
+    vendors: { id: string; name: string }[]
+    user: { id: string; name: string; email: string; role: Role; vendorId: string | null }
+  }
 
 const ROLES: { value: Role; label: string }[] = [
   { value: "PROCUREMENT_OFFICER", label: "Procurement Officer" },
@@ -54,19 +54,19 @@ export function UserDialog(props: Props) {
     defaultValues:
       props.mode === "edit"
         ? {
-            name: props.user.name,
-            email: props.user.email,
-            role: props.user.role,
-            vendorId: props.user.vendorId ?? "",
-            password: "",
-          }
+          name: props.user.name,
+          email: props.user.email,
+          role: props.user.role,
+          vendorId: props.user.vendorId ?? "",
+          password: "",
+        }
         : {
-            name: "",
-            email: "",
-            role: "PROCUREMENT_OFFICER",
-            vendorId: "",
-            password: "",
-          },
+          name: "",
+          email: "",
+          role: "PROCUREMENT_OFFICER",
+          vendorId: "",
+          password: "",
+        },
   })
 
   const role = useWatch({ control: form.control, name: "role" })
@@ -147,7 +147,11 @@ export function UserDialog(props: Props) {
                 onValueChange={(v) => form.setValue("vendorId", v ?? "")}
               >
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Pick a vendor" />
+                  <span className="flex flex-1 text-left" data-slot="select-value">
+                    {vendorId
+                      ? props.vendors.find((v) => v.id === vendorId)?.name ?? "Pick a vendor"
+                      : <span className="text-muted-foreground">Pick a vendor</span>}
+                  </span>
                 </SelectTrigger>
                 <SelectContent>
                   {props.vendors.map((v) => (
@@ -202,8 +206,8 @@ export function UserDialog(props: Props) {
               {pending
                 ? "Saving…"
                 : props.mode === "create"
-                ? "Create user"
-                : "Save"}
+                  ? "Create user"
+                  : "Save"}
             </Button>
           </DialogFooter>
         </form>

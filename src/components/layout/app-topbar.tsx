@@ -2,6 +2,8 @@
 
 import { IconLogout, IconUser } from "@tabler/icons-react"
 
+import Link from "next/link"
+
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -39,7 +41,7 @@ export function AppTopbar({
               </div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem render={<Link href="/profile" />}>
               <IconUser className="size-4" />
               Profile
             </DropdownMenuItem>
