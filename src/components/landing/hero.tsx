@@ -82,11 +82,11 @@ export function Hero() {
               <span data-word className="inline-block">vendors,</span>
             </span>
             <br className="hidden md:inline" />{" "}
-            <span className="inline-block overflow-hidden">
+            <span className="inline-block overflow-hidden pr-1">
               <span data-word className="inline-block italic font-light">RFQs,</span>
             </span>{" "}
-            <span className="inline-block overflow-hidden">
-              <span data-word className="inline-block italic font-light">approvals</span>
+            <span className="inline-block overflow-hidden pr-2">
+              <span data-word className="inline-block italic font-light pr-1">approvals</span>
             </span>{" "}
             <span className="inline-block overflow-hidden">
               <span data-word className="inline-block">and</span>

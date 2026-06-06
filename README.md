@@ -35,7 +35,7 @@
 - [Database Seeding](#-database-seeding)
 - [End-to-End Demo Script](#-end-to-end-demo-script)
 - [Cross-Cutting Features](#-cross-cutting-features)
-- [Roadmap](#️-roadmap)
+- [API Guide](#-api-guide)
 
 ---
 
@@ -150,40 +150,65 @@ Most procurement in SMEs and enterprises still runs on:
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Libraries & Tech Stack
 
-### Frontend
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js | 16.2 | Full-stack React framework (App Router + Server Actions) |
-| React | 19 | UI library |
-| TypeScript | 5 | Type safety across the entire codebase |
-| Tailwind CSS | v4 | Utility-first styling |
-| shadcn/ui | latest | Accessible component library built on Radix UI |
-| Recharts | 3.8 | Procurement analytics charts |
-| @react-pdf/renderer | 4.5 | Client & server PDF generation |
-| Motion | 12 | Animations (GSAP + Framer Motion) |
-| React Hook Form + Zod | 7.x / 3.x | Form management & schema validation |
-| next-themes | 0.4 | Dark / light mode |
-| sonner | 2.0 | Toast notifications |
+Every runtime dependency below is pulled straight from `package.json` — no aspirational listings.
 
-### Backend & Data
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| Next.js Server Actions | — | API layer (no separate Express server) |
-| NextAuth v5 | 5.0-beta | Authentication, session management, JWT |
-| Prisma | 6.19 | ORM, schema management, migrations |
-| PostgreSQL | any | Primary relational database (Supabase recommended) |
-| bcryptjs | 3.x | Password hashing |
-| Nodemailer | 7.x | Email delivery |
-| nanoid | 5.x | Unique ID generation |
+### Frontend & UI
+| Library | Version | Role |
+|---------|---------|------|
+| `next` | 16.2.7 | Full-stack React framework (App Router, Server Actions, Route Handlers) |
+| `react` | 19.2.4 | UI library |
+| `react-dom` | 19.2.4 | React DOM renderer |
+| `typescript` | 5 | Static types across the entire codebase |
+| `tailwindcss` | 4 | Utility-first styling (CSS-first config, no `tailwind.config.js`) |
+| `@tailwindcss/postcss` | 4 | Tailwind v4 PostCSS plugin |
+| `tw-animate-css` | 1.4 | Tailwind animation utilities |
+| `shadcn` | 4.10 | Component generator (style: `base-nova`) |
+| `@base-ui/react` | 1.5 | Unstyled accessible primitives (Popover, Dialog, Select, Menu, Tabs, etc.) |
+| `@tabler/icons-react` | 3.44 | Tabler icon set (icon library chosen in `components.json`) |
+| `next-themes` | 0.4 | Dark / light theme switching |
+| `motion` | 12.40 | UI animations (Framer Motion successor) |
+| `gsap` | 3.15 | Scroll-driven and landing-page animations |
+| `recharts` | 3.8 | Procurement analytics charts (composed, bar, pie) |
+| `react-day-picker` | 10.0 | Date-range picker for the reports/analytics filters |
+| `sonner` | 2.0 | Toast notifications |
+| `cmdk` | 1.1 | Command palette / fuzzy search primitives |
 
-### Infrastructure
-| Technology | Purpose |
-|------------|---------|
-| Cloudflare Workers + Durable Objects | Real-time WebSocket hub for live notifications |
-| Resend | Transactional email (invoice delivery, password reset, RFQ invites) |
-| Vercel | Frontend + serverless deployment |
+### Forms, Validation & Schema
+| Library | Version | Role |
+|---------|---------|------|
+| `react-hook-form` | 7.77 | Form state management |
+| `@hookform/resolvers` | 5.4 | Bridges RHF to validation libraries |
+| `zod` | 3.25 | Runtime schema validation (single source of truth for inputs) |
+| `@react-pdf/renderer` | 4.5 | Client + server PDF generation for invoices |
+
+### Auth, Data & Server
+| Library | Version | Role |
+|---------|---------|------|
+| `next-auth` | 5.0.0-beta.31 | Authentication, session management (JWT strategy) |
+| `@auth/prisma-adapter` | 2.11 | NextAuth Prisma adapter |
+| `@prisma/client` | 6.19 | Typed database client |
+| `prisma` (dev) | 6.19 | Schema, migrations, seeding |
+| `bcryptjs` | 3.0 | Password hashing |
+| `nodemailer` | 7.0 | Email transport (Resend in production, console in dev) |
+| `nanoid` | 5.1 | Compact unique ID generation |
+| `date-fns` | 4.4 | Date math for billing cycles, RFQ deadlines, reports bucketing |
+
+### Styling Utilities
+| Library | Version | Role |
+|---------|---------|------|
+| `clsx` | 2.1 | Conditional class names |
+| `tailwind-merge` | 3.6 | Resolves conflicting Tailwind classes |
+| `class-variance-authority` | 0.7 | Type-safe variant-driven component APIs (shadcn/ui pattern) |
+| `sharp` (dev) | 0.34 | Image optimization (Next.js dependency) |
+
+### Real-Time & Infra
+| Library / Service | Version | Role |
+|-------------------|---------|------|
+| Cloudflare Workers + Durable Objects | — | WebSocket hub hosting the `WebSocketHub` DO (see API Guide §3) |
+| Resend | — | Transactional email (invoice delivery, password reset, RFQ invites) |
+| Vercel | — | Frontend + serverless deployment |
 
 ---
 
@@ -665,15 +690,121 @@ Fan-out rules:
 
 ---
 
-## 🛣️ Roadmap
+## 📡 API Guide
 
-- [ ] **Vendor self-registration portal** — suppliers onboard themselves
-- [ ] **Multi-level approval thresholds** — auto-route by PO value
-- [ ] **Bulk RFQ import** — CSV/Excel line-item upload
-- [ ] **Mobile PWA** — offline-ready for field procurement agents
-- [ ] **Webhook integrations** — ERP connectors (SAP, Tally, Zoho Books)
-- [ ] **Spend forecasting** — ML-based procurement trend predictions
-- [ ] **Vendor portal** — dedicated external-facing portal for supplier management
+VendorBridge exposes three surfaces: **HTTP Route Handlers** for binary/streamed output, **Next.js Server Actions** for every typed business mutation, and a **Cloudflare Workers WebSocket hub** for real-time push. There is no public REST CRUD API — all reads/writes go through server actions, which keeps type-safety end-to-end and removes the need for a separate API tier.
+
+### 1 · HTTP Route Handlers (`src/app/api/`)
+
+| Method | Path | Auth | Description |
+|--------|------|:----:|-------------|
+| `GET` | `/api/invoices/[id]/pdf` | Session | Streams the rendered invoice PDF (`application/pdf`, inline). Returns `401` if unauthenticated, `404` if the invoice doesn't exist, `403` if a `VENDOR` user requests an invoice for a different vendor. |
+| `*`  | `/api/auth/[...nextauth]` | — | NextAuth v5 catch-all. Handles `signIn`, `signOut`, `callback`, `session`, `csrf`, and `providers` routes for credentials + JWT sessions. |
+
+> All other endpoints are intentionally **not** exposed as REST — mutations live in server actions (see §2) and are typed via Zod schemas in `src/lib/validation/`.
+
+### 2 · Server Actions (`src/lib/actions/*.ts`)
+
+Every server action file starts with `"use server"` and is called directly from React Server Components or client components via the React 19 `useTransition` / `useActionState` hooks. Each action:
+
+1. **Authenticates** via `requireUser()` or `requireRole([...])` (throws on failure).
+2. **Validates** input with a Zod schema from `src/lib/validation/`.
+3. **Mutates** the database through the Prisma client.
+4. **Logs** an immutable `ActivityLog` row via `logActivity()`.
+5. **Notifies** affected users via `notify()` (writes a `Notification` row and fans out a real-time event — see §3).
+6. **Revalidates** the relevant route via `revalidatePath()`.
+
+| Module | Exports (high-level) | Role Guard |
+|--------|----------------------|:----------:|
+| `auth.ts` | `login`, `logout`, `requestPasswordReset`, `resetPassword` | Public |
+| `session.ts` | `getCurrentSession`, `getCurrentUser` | Any |
+| `users.ts` | `listUsers`, `createUser`, `updateUser`, `disableUser`, `enableUser`, `resetUserPassword` | `ADMIN` |
+| `profile.ts` | `updateOwnProfile`, `changeOwnPassword` | Any (self only) |
+| `vendors.ts` | `listVendors`, `getVendor`, `createVendor`, `updateVendor`, `toggleVendorStatus` | `ADMIN`, `OFFICER` |
+| `rfqs.ts` | `listRfqs`, `getRfq`, `createRfq`, `updateRfq`, `publishRfq`, `cancelRfq`, `uploadRfqAttachment` | `ADMIN`, `OFFICER` |
+| `quotations.ts` | `listInvitationsForVendor`, `listQuotationsForOfficer`, `getOrCreateQuotation`, `saveQuotationDraft`, `submitQuotation` | Per-role (vendor sees own only) |
+| `approvals.ts` | `listPendingApprovals`, `getApproval`, `decideApproval` (approve/reject with remarks) | `ADMIN`, `MANAGER` |
+| `purchase-orders.ts` | `listPurchaseOrders`, `getPurchaseOrder`, `generatePoFromAward` (auto) | `ADMIN`, `OFFICER` |
+| `invoices.ts` | `listInvoices`, `getInvoice`, `generateInvoiceFromPo`, `sendInvoiceEmail`, `markInvoicePaid` | `ADMIN`, `OFFICER` |
+| `reports.ts` | `getReportsData({ from, to, granularity })` — returns time series, spend by vendor/category, KPIs, vendor performance | `ADMIN`, `OFFICER`, `MANAGER` |
+| `dashboard.ts` | `getDashboardData(role)` — role-aware KPI tiles + recent activity | Any |
+| `notifications.ts` | `listMyNotifications`, `markNotificationRead`, `markAllNotificationsRead` | Any (self only) |
+| `demo-requests.ts` | `submitDemoRequest` — public marketing form | Public |
+
+**Example — submitting a quotation (called from a client component):**
+
+```tsx
+"use client"
+import { useTransition } from "react"
+import { submitQuotation } from "@/lib/actions/quotations"
+
+export function SubmitButton({ quotationId }: { quotationId: string }) {
+  const [pending, start] = useTransition()
+  return (
+    <button disabled={pending} onClick={() => start(() => submitQuotation(quotationId))}>
+      {pending ? "Submitting…" : "Submit quotation"}
+    </button>
+  )
+}
+```
+
+### 3 · Real-Time WebSocket Hub (`websocket-server/`)
+
+A standalone **Cloudflare Workers** app (deployed separately from the Next.js app) that holds open WebSocket connections and fans out events published by the Next.js server actions.
+
+#### Worker Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|:----:|-------------|
+| `GET`  | `/health`  | None | Liveness probe → `{ status: "ok" }`. |
+| `GET`  | `/ws`      | Origin-allowlisted | WebSocket upgrade. Client subscribes to one or more **topics** on connect. |
+| `POST` | `/notify`  | `X-Webhook-Secret` header | Internal webhook fired by Next.js server actions. Body: `{ topic \| topics: string[], event: string, data?: unknown }`. Returns `{ delivered, count }`. |
+
+CORS allowlist is configured via the `ALLOWED_ORIGINS` var in `websocket-server/wrangler.toml` (defaults: `http://localhost:3000`, `https://qubits-vendorbridge.vercel.app`).
+
+#### Topic Conventions
+
+| Topic | Recipients |
+|-------|------------|
+| `user:<userId>` | Exactly one user (notification fan-out target). |
+| `role:<ROLE>` | Every connected user whose role matches (e.g. `role:MANAGER` for approval events). |
+
+#### Client Connection (browser)
+
+`src/hooks/use-realtime-notifications.ts` opens the socket on mount:
+
+```ts
+const ws = new WebSocket(`${process.env.NEXT_PUBLIC_WS_URL}/ws?topics=user:${userId},role:${role}`)
+ws.onmessage = (msg) => {
+  const { event, data } = JSON.parse(msg.data)
+  // event ∈ { "notification", "rfq:updated", "approval:decided", ... }
+}
+```
+
+#### Publishing from a Server Action
+
+`src/lib/activity.ts → notify(userId, payload)` calls the worker internally:
+
+```ts
+await fetch(`${process.env.NEXT_PUBLIC_WS_URL}/notify`, {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-Webhook-Secret": process.env.WS_WEBHOOK_SECRET!,
+  },
+  body: JSON.stringify({
+    topic: `user:${userId}`,
+    event: "notification",
+    data: { notificationId, deepLink, title, body },
+  }),
+})
+```
+
+Set both `NEXT_PUBLIC_WS_URL` (browser-reachable `wss://…`/`https://…`) and `WS_WEBHOOK_SECRET` in `.env`. Configure the matching secret on the worker with `wrangler secret put WEBHOOK_SECRET` (do **not** also add it to `[vars]` — Cloudflare rejects same-name var + secret bindings).
+
+### 4 · Data Schemas
+
+Input validation is centralized in `src/lib/validation/` and consumed by both server actions and the corresponding `react-hook-form` + `zodResolver` form components. Schemas include `vendorSchema`, `rfqSchema`, `quotationSchema`, `invoiceSchema`, `userSchema`, `loginSchema`, and `resetPasswordSchema`. Each Zod schema is the single source of truth — the form, the server action, and the TypeScript type (`z.infer<typeof schema>`) all derive from it.
 
 ---
 
