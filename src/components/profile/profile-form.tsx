@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { toast } from "sonner"
 import { format } from "date-fns"
-import { IconUser, IconLock, IconBuilding, IconShield } from "@tabler/icons-react"
+import { IconUser, IconLock, IconBuilding, IconShield, IconMail } from "@tabler/icons-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -49,7 +49,6 @@ export function ProfileForm({ user }: ProfileFormProps) {
     resolver: zodResolver(profileInfoSchema),
     defaultValues: {
       name: user.name,
-      email: user.email,
     },
   })
 
@@ -107,7 +106,7 @@ export function ProfileForm({ user }: ProfileFormProps) {
               <CardHeader>
                 <CardTitle>Profile Details</CardTitle>
                 <CardDescription>
-                  Update your display name and email address.
+                  Update your display name. Your email is locked to your account.
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -127,19 +126,28 @@ export function ProfileForm({ user }: ProfileFormProps) {
                       )}
                     />
 
-                    <FormField
-                      control={infoForm.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email Address</FormLabel>
-                          <FormControl>
-                            <Input type="email" placeholder="john@example.com" {...field} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div className="space-y-2">
+                      <label
+                        htmlFor="email"
+                        className="text-sm font-medium leading-none flex items-center gap-1.5"
+                      >
+                        <IconMail className="size-3.5 text-muted-foreground" />
+                        Email Address
+                      </label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={user.email}
+                        readOnly
+                        disabled
+                        aria-readonly
+                        className="bg-muted/40 text-muted-foreground cursor-not-allowed"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Email is your unique identifier and cannot be changed. Contact an
+                        administrator if it needs to be updated.
+                      </p>
+                    </div>
 
                     <div className="pt-2">
                       <Button type="submit" disabled={infoPending}>

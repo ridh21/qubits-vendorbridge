@@ -20,22 +20,11 @@ export async function updateProfileInfo(input: ProfileInfoInput): Promise<Action
   try {
     const actor = await requireUser()
     const parsed = profileInfoSchema.parse(input)
-    const email = parsed.email.toLowerCase()
-
-    // Check if email is in use by another user
-    const existing = await prisma.user.findUnique({
-      where: { email },
-    })
-
-    if (existing && existing.id !== actor.id) {
-      return { ok: false, error: "Email already in use" }
-    }
 
     await prisma.user.update({
       where: { id: actor.id },
       data: {
         name: parsed.name,
-        email,
       },
     })
 
@@ -45,7 +34,7 @@ export async function updateProfileInfo(input: ProfileInfoInput): Promise<Action
       entityType: "User",
       entityId: actor.id,
       action: "updated",
-      message: `User updated their own profile info (Name: ${parsed.name}, Email: ${email})`,
+      message: `User updated their own profile info (Name: ${parsed.name})`,
     })
 
     revalidatePath("/profile")
