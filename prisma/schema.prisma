@@ -1,0 +1,338 @@
+// VendorBridge — Procurement & Vendor Management ERP
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  PROCUREMENT_OFFICER
+  MANAGER
+  VENDOR
+}
+
+enum VendorStatus {
+  ACTIVE
+  INACTIVE
+  PENDING
+}
+
+enum RfqStatus {
+  DRAFT
+  OPEN
+  CLOSED
+  AWARDED
+  CANCELLED
+}
+
+enum RfqVendorStatus {
+  INVITED
+  RESPONDED
+  DECLINED
+}
+
+enum QuotationStatus {
+  DRAFT
+  SUBMITTED
+  SHORTLISTED
+  REJECTED
+  AWARDED
+  WITHDRAWN
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum PurchaseOrderStatus {
+  ISSUED
+  FULFILLED
+  CANCELLED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+enum NotificationType {
+  RFQ_PUBLISHED
+  QUOTATION_SUBMITTED
+  APPROVAL_REQUESTED
+  APPROVAL_DECIDED
+  PO_ISSUED
+  INVOICE_SENT
+  GENERIC
+}
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  passwordHash    String
+  name            String
+  role            Role      @default(PROCUREMENT_OFFICER)
+  vendorId        String?
+  vendor          Vendor?   @relation(fields: [vendorId], references: [id], onDelete: SetNull)
+  disabled        Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  rfqsCreated     Rfq[]            @relation("RfqCreatedBy")
+  approvals       Approval[]       @relation("ApprovalApprover")
+  activityLogs    ActivityLog[]
+  notifications   Notification[]
+  passwordResets  PasswordReset[]
+
+  @@index([role])
+}
+
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Vendor {
+  id            String       @id @default(cuid())
+  name          String
+  category      String
+  gstNumber     String?      @unique
+  status        VendorStatus @default(PENDING)
+  contactName   String
+  contactEmail  String
+  contactPhone  String?
+  address       String?
+  rating        Float        @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  users         User[]
+  invitations   RfqVendor[]
+  quotations    Quotation[]
+  purchaseOrders PurchaseOrder[]
+  invoices      Invoice[]
+
+  @@index([status])
+  @@index([category])
+}
+
+model Rfq {
+  id            String      @id @default(cuid())
+  code          String      @unique
+  title         String
+  description   String?
+  deadline      DateTime
+  status        RfqStatus   @default(DRAFT)
+  createdById   String
+  createdBy     User        @relation("RfqCreatedBy", fields: [createdById], references: [id])
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  items         RfqItem[]
+  attachments   RfqAttachment[]
+  vendors       RfqVendor[]
+  quotations    Quotation[]
+
+  @@index([status])
+  @@index([deadline])
+}
+
+model RfqItem {
+  id          String   @id @default(cuid())
+  rfqId       String
+  rfq         Rfq      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  quantity    Int
+  unit        String   @default("unit")
+  position    Int      @default(0)
+
+  lines       QuotationLine[]
+
+  @@index([rfqId])
+}
+
+model RfqAttachment {
+  id        String   @id @default(cuid())
+  rfqId     String
+  rfq       Rfq      @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  filename  String
+  url       String
+  size      Int
+  mimeType  String
+  createdAt DateTime @default(now())
+
+  @@index([rfqId])
+}
+
+model RfqVendor {
+  id         String          @id @default(cuid())
+  rfqId      String
+  vendorId   String
+  status     RfqVendorStatus @default(INVITED)
+  invitedAt  DateTime        @default(now())
+
+  rfq        Rfq             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor     Vendor          @relation(fields: [vendorId], references: [id], onDelete: Cascade)
+
+  @@unique([rfqId, vendorId])
+  @@index([vendorId])
+}
+
+model Quotation {
+  id           String          @id @default(cuid())
+  code         String          @unique
+  rfqId        String
+  vendorId     String
+  deliveryDays Int             @default(0)
+  notes        String?
+  totalAmount  Int             @default(0) // stored in paise/cents
+  status       QuotationStatus @default(DRAFT)
+  submittedAt  DateTime?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  rfq          Rfq             @relation(fields: [rfqId], references: [id], onDelete: Cascade)
+  vendor       Vendor          @relation(fields: [vendorId], references: [id])
+  lines        QuotationLine[]
+  approval     Approval?
+  purchaseOrder PurchaseOrder?
+
+  @@unique([rfqId, vendorId])
+  @@index([status])
+}
+
+model QuotationLine {
+  id           String   @id @default(cuid())
+  quotationId  String
+  rfqItemId    String
+  unitPrice    Int      @default(0) // in paise/cents
+  quantity     Int      @default(0)
+  lineTotal    Int      @default(0)
+
+  quotation    Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  rfqItem      RfqItem   @relation(fields: [rfqItemId], references: [id], onDelete: Cascade)
+
+  @@unique([quotationId, rfqItemId])
+}
+
+model Approval {
+  id          String         @id @default(cuid())
+  quotationId String         @unique
+  approverId  String?
+  status      ApprovalStatus @default(PENDING)
+  remarks     String?
+  decidedAt   DateTime?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  quotation   Quotation      @relation(fields: [quotationId], references: [id], onDelete: Cascade)
+  approver    User?          @relation("ApprovalApprover", fields: [approverId], references: [id])
+
+  @@index([status])
+}
+
+model PurchaseOrder {
+  id           String              @id @default(cuid())
+  code         String              @unique
+  quotationId  String              @unique
+  vendorId     String
+  totalAmount  Int                 @default(0)
+  taxAmount    Int                 @default(0)
+  grandTotal   Int                 @default(0)
+  status       PurchaseOrderStatus @default(ISSUED)
+  issuedAt     DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+
+  quotation    Quotation           @relation(fields: [quotationId], references: [id])
+  vendor       Vendor              @relation(fields: [vendorId], references: [id])
+  invoice      Invoice?
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  code         String        @unique
+  poId         String        @unique
+  vendorId     String
+  subtotal     Int           @default(0)
+  taxRate      Float         @default(18) // percent
+  taxAmount    Int           @default(0)
+  grandTotal   Int           @default(0)
+  status       InvoiceStatus @default(DRAFT)
+  recipientEmail String?
+  pdfUrl       String?
+  sentAt       DateTime?
+  paidAt       DateTime?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  po           PurchaseOrder @relation(fields: [poId], references: [id])
+  vendor       Vendor        @relation(fields: [vendorId], references: [id])
+  lines        InvoiceLine[]
+
+  @@index([status])
+}
+
+model InvoiceLine {
+  id          String   @id @default(cuid())
+  invoiceId   String
+  name        String
+  quantity    Int      @default(0)
+  unitPrice   Int      @default(0)
+  lineTotal   Int      @default(0)
+
+  invoice     Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model ActivityLog {
+  id         String   @id @default(cuid())
+  userId     String?
+  actorRole  Role?
+  entityType String
+  entityId   String
+  action     String
+  message    String
+  createdAt  DateTime @default(now())
+
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(GENERIC)
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, readAt])
+}
+
+model CodeSequence {
+  prefix String @id
+  year   Int
+  value  Int    @default(0)
+}

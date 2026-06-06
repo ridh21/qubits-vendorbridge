@@ -1,13 +1,7 @@
+import { redirect } from "next/navigation"
+import { getSessionUser } from "@/lib/rbac"
 
-import { Button } from "@/components/ui/button";
-import Image from "next/image";
-
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-     <Button variant="default" size="lg">
-        Hello World
-      </Button>
-    </div>
-  );
+export default async function Root() {
+  const user = await getSessionUser()
+  redirect(user ? "/dashboard" : "/login")
 }
