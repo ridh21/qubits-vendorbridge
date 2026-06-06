@@ -2,12 +2,13 @@ import path from "path"
 import nodemailer from "nodemailer"
 import type Mail from "nodemailer/lib/mailer"
 
+import { getAppUrl } from "@/lib/app-url"
+
 const smtpHost = process.env.SMTP_HOST ?? "smtp.gmail.com"
 const smtpPort = Number(process.env.SMTP_PORT ?? "587")
 const smtpUser = process.env.SMTP_USER
 const smtpPassword = process.env.SMTP_PASSWORD
 const from = process.env.EMAIL_FROM ?? smtpUser ?? "VendorBridge <noreply@vendorbridge.dev>"
-const appUrl = process.env.APP_URL ?? "http://localhost:3000"
 
 // Use the compressed, email-sized PNG (~7 KB) so transactional mail
 // stays well under per-recipient size limits.
@@ -92,6 +93,7 @@ function shell(opts: {
   ctaHref?: string
   footerNote?: string
 }) {
+  const appUrl = getAppUrl()
   const cta = opts.ctaLabel && opts.ctaHref
     ? `
         <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 24px 0;">
@@ -188,7 +190,7 @@ export async function sendUserCredentialsEmail(opts: {
   loginUrl?: string
 }) {
   const subject = "Your VendorBridge login credentials"
-  const loginUrl = opts.loginUrl ?? `${appUrl}/login`
+  const loginUrl = opts.loginUrl ?? `${getAppUrl()}/login`
   const html = shell({
     preheader: "Your VendorBridge account is ready",
     heading: `Welcome, ${opts.name}.`,

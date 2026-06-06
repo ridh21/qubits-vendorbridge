@@ -14,6 +14,7 @@ export default async function AppLayout({
   if (!user) redirect("/login")
 
   const display = {
+    id: user.id,
     name: user.name ?? "User",
     email: user.email ?? "",
   }

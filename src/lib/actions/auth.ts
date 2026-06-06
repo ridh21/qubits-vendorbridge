@@ -16,6 +16,7 @@ import {
   type SignupInput,
 } from "@/lib/validation/auth"
 import { sendPasswordResetEmail } from "@/lib/email"
+import { getAppUrl } from "@/lib/app-url"
 
 export type ActionResult =
   | { ok: true; message?: string }
@@ -94,7 +95,7 @@ export async function forgotPasswordAction(
     data: { userId: user.id, tokenHash, expiresAt },
   })
 
-  const link = `${process.env.APP_URL ?? "http://localhost:3000"}/reset-password?token=${token}`
+  const link = `${getAppUrl()}/reset-password?token=${token}`
   await sendPasswordResetEmail(user.email, user.name, link)
 
   return { ok: true, message: "Check your email for a reset link" }

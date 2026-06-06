@@ -1,0 +1,20 @@
+name = "vendorbridge-ws"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+
+[durable_objects]
+bindings = [
+  { name = "WS_HUB", class_name = "WebSocketHub" }
+]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["WebSocketHub"]
+
+[vars]
+# Shared secret used by the Next.js app to authenticate /notify webhooks.
+# Override in production with `wrangler secret put WEBHOOK_SECRET`.
+WEBHOOK_SECRET = "vb_dev_secret_change_me"
+
+# Comma-separated allowed origins for CORS.
+ALLOWED_ORIGINS = "http://localhost:3000,https://qubits-vendorbridge.vercel.app"

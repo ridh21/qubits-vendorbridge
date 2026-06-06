@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma"
 import type { Role } from "@prisma/client"
+import { publishRealtime, userTopic } from "@/lib/realtime"
 
 export type LogActivityInput = {
   userId?: string | null
@@ -50,5 +51,18 @@ export async function notify(input: NotifyInput) {
       body: input.body,
       link: input.link,
     })),
+  })
+
+  // Fire-and-forget realtime fan-out — don't block the action on the worker.
+  void publishRealtime({
+    topics: input.userIds.map((id) => userTopic(id)),
+    event: "notification.created",
+    data: {
+      type: input.type,
+      title: input.title,
+      body: input.body,
+      link: input.link ?? null,
+      createdAt: new Date().toISOString(),
+    },
   })
 }

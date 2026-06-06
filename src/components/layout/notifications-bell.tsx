@@ -1,8 +1,9 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 import Link from "next/link"
-import { IconBell } from "@tabler/icons-react"
+import { useRouter } from "next/navigation"
+import { IconBell, IconBellRinging, IconBellOff } from "@tabler/icons-react"
 import { formatDistanceToNow } from "date-fns"
 
 import { Button } from "@/components/ui/button"
@@ -13,6 +14,11 @@ import {
 } from "@/components/ui/popover"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { listMyNotifications, markAllRead } from "@/lib/actions/notifications"
+import {
+  useRealtimeNotifications,
+  browserNotify,
+  type NotificationPayload,
+} from "@/hooks/use-realtime-notifications"
 
 type Notif = {
   id: string
@@ -23,50 +29,67 @@ type Notif = {
   createdAt: Date
 }
 
-export function NotificationsBell() {
+export function NotificationsBell({ userId }: { userId: string }) {
+  const router = useRouter()
   const [open, setOpen] = useState(false)
   const [items, setItems] = useState<Notif[]>([])
   const [unread, setUnread] = useState(0)
   const [pending, start] = useTransition()
+  const [permission, setPermission] =
+    useState<NotificationPermission | null>(null)
   const audioRef = useRef<HTMLAudioElement | null>(null)
-  const lastTopIdRef = useRef<string | null>(null)
-  const seededRef = useRef(false)
 
-  const playPing = () => {
+  const playPing = useCallback(() => {
     const a = audioRef.current
     if (!a) return
     try {
       a.currentTime = 0
       void a.play().catch(() => {})
     } catch {}
-  }
+  }, [])
 
-  const refresh = () =>
-    listMyNotifications(15).then((d) => {
-      const next = d.items as Notif[]
-      const topId = next[0]?.id ?? null
+  const refresh = useCallback(
+    () =>
+      listMyNotifications(15).then((d) => {
+        setItems(d.items as Notif[])
+        setUnread(d.unread)
+      }),
+    [],
+  )
 
-      if (!seededRef.current) {
-        // First load: don't play, just record current top id.
-        seededRef.current = true
-      } else if (topId && topId !== lastTopIdRef.current && d.unread > 0) {
-        playPing()
-      }
-      lastTopIdRef.current = topId
-
-      setItems(next)
-      setUnread(d.unread)
-    })
+  // Real-time fan-out from the Cloudflare worker.
+  useRealtimeNotifications({
+    userId,
+    onEvent: (payload: NotificationPayload) => {
+      playPing()
+      browserNotify.show(payload.title, {
+        body: payload.body,
+        tag: payload.type,
+        onClick: payload.link
+          ? () => router.push(payload.link as string)
+          : undefined,
+      })
+      // Refresh the popover list + unread count from the DB so it's authoritative.
+      refresh()
+    },
+  })
 
   useEffect(() => {
     audioRef.current = new Audio("/notification.mp3")
     audioRef.current.preload = "auto"
     audioRef.current.volume = 0.6
+    setPermission(browserNotify.permission())
 
     refresh()
-    const id = window.setInterval(refresh, 15000)
+    // Slow safety-net polling in case the socket is unhealthy.
+    const id = window.setInterval(refresh, 60_000)
     return () => window.clearInterval(id)
-  }, [])
+  }, [refresh])
+
+  const requestPermission = async () => {
+    const result = await browserNotify.ensurePermission()
+    setPermission(result)
+  }
 
   return (
     <Popover
@@ -107,6 +130,30 @@ export function NotificationsBell() {
             Mark all read
           </Button>
         </div>
+
+        {permission !== "granted" && permission !== null && (
+          <div className="border-b px-3 py-2 flex items-center justify-between gap-2 bg-amber-50/60">
+            <div className="text-xs text-amber-900 flex items-center gap-2">
+              {permission === "denied" ? (
+                <>
+                  <IconBellOff className="size-4 shrink-0" />
+                  Browser notifications are blocked.
+                </>
+              ) : (
+                <>
+                  <IconBellRinging className="size-4 shrink-0" />
+                  Enable desktop notifications?
+                </>
+              )}
+            </div>
+            {permission === "default" && (
+              <Button size="xs" variant="outline" onClick={requestPermission}>
+                Enable
+              </Button>
+            )}
+          </div>
+        )}
+
         <ScrollArea className="max-h-96">
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground p-6 text-center">
@@ -117,9 +164,7 @@ export function NotificationsBell() {
               {items.map((n) => (
                 <li
                   key={n.id}
-                  className={
-                    n.readAt ? "" : "bg-blue-50/40"
-                  }
+                  className={n.readAt ? "" : "bg-blue-50/40"}
                 >
                   {n.link ? (
                     <Link

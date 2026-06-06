@@ -18,13 +18,13 @@ import { signOutAction } from "@/lib/actions/session"
 export function AppTopbar({
   user,
 }: {
-  user: { name: string; email: string }
+  user: { id: string; name: string; email: string }
 }) {
   return (
     <header className="flex h-14 items-center gap-2 border-b bg-background px-4 sticky top-0 z-30">
       <SidebarTrigger />
       <div className="ml-auto flex items-center gap-1">
-        <NotificationsBell />
+        <NotificationsBell userId={user.id} />
         <DropdownMenu>
           <DropdownMenuTrigger className="size-9 rounded-full bg-muted text-sm font-medium flex items-center justify-center hover:opacity-90">
             {user.name.slice(0, 1).toUpperCase()}
