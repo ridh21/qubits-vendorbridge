@@ -1,22 +1,63 @@
-# 🏗️ VendorBridge
 
-### *From the first RFQ to the final paid invoice — structured, automated, and fully audited.*
+<p align="center">
+  <img src="./public/logo.png" alt="VendorBridge — Qubits" width="280" />
+</p>
 
-**A production-grade, full-stack Procurement & Vendor Management ERP built for organizations that want to replace WhatsApp approvals, Excel tenders, and gut-feel vendor selection with a single, structured, role-driven platform.**
+<p align="center">
+  <em>From the first RFQ to the final paid invoice — structured, automated, and fully audited.</em>
+</p>
 
-[![Next.js](https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js)](https://nextjs.org)
-[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Prisma-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
-[![Cloudflare Workers](https://img.shields.io/badge/Realtime-Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white)](https://workers.cloudflare.com)
+<p align="center">
+  <strong>A production-grade, full-stack Procurement & Vendor Management ERP built for organizations that want to replace WhatsApp approvals, Excel tenders, and gut-feel vendor selection with a single, structured, role-driven platform.</strong>
+</p>
 
-[**Live Demo**](#) · [**Excalidraw Mockup**](https://app.excalidraw.com/l/65VNwvy7c4X/5ywnm0v3qhK) · [**Problem Statement**](#-problem-statement)
+<p align="center">
+  <a href="https://qubits-vendorbridge.vercel.app/"><img src="https://img.shields.io/badge/🌐_Live_Demo-qubits--vendorbridge.vercel.app-086AA5?style=for-the-badge" alt="Live Demo" /></a>
+  <a href="https://drive.google.com/drive/folders/1gBJKo1zdwdNFESWovjr5WOMfv2PXCQX_?usp=sharing"><img src="https://img.shields.io/badge/🎥_Video_Walkthrough-Google_Drive-EA4335?style=for-the-badge" alt="Video Walkthrough" /></a>
+  <a href="https://app.excalidraw.com/l/65VNwvy7c4X/5ywnm0v3qhK"><img src="https://img.shields.io/badge/🗺️_Architecture_Map-Excalidraw-6E56CF?style=for-the-badge" alt="Excalidraw" /></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Next.js-16.2-black?style=for-the-badge&logo=next.js" alt="Next.js 16.2" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React 19" />
+  <img src="https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript 5" />
+  <img src="https://img.shields.io/badge/PostgreSQL-Prisma-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="PostgreSQL + Prisma" />
+  <img src="https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind v4" />
+  <img src="https://img.shields.io/badge/Realtime-Cloudflare_Workers-F38020?style=for-the-badge&logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
+</p>
+
+---
+
+## 👥 Meet the Team — Qubits
+
+Built with ❤️ by a team of four. Every byte of this ERP, from database schema to landing-page animation, was designed, coded, and shipped by:
+
+<table align="center">
+  <tr>
+    <td align="center" width="25%">
+      <strong>🧑‍💻 Ridham Patel</strong><br />
+      <sub>Full-Stack · Architecture · DevOps</sub>
+    </td>
+    <td align="center" width="25%">
+      <strong>🧑‍💻 Hemant Pande</strong><br />
+      <sub>Full-Stack · UI/UX · Frontend</sub>
+    </td>
+    <td align="center" width="25%">
+      <strong>👩‍💻 Hetvi Hinsu</strong><br />
+      <sub>Full-Stack · Schema · Integrations</sub>
+    </td>
+    <td align="center" width="25%">
+      <strong>👩‍💻 Honey Modha</strong><br />
+      <sub>Full-Stack · QA · Documentation</sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 📋 Table of Contents
 
+- [Meet the Team](#-meet-the-team--qubits)
 - [Problem Statement](#-problem-statement)
 - [What VendorBridge Does](#-what-vendorbridge-does)
 - [Architecture](#️-architecture)
@@ -76,7 +117,7 @@ Most procurement in SMEs and enterprises still runs on:
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │              🖥️  Client — Next.js 16 + React 19              │
-│        Role-Based UI · shadcn/ui · Tailwind v4 · Recharts    │
+│        Role-Based UI · shadcn/ui + Base UI · Tailwind v4     │
 └─────────────┬─────────────────────────────┬─────────────────┘
               │ Server Actions (RSC)         │ WebSocket
               ▼                             ▼
@@ -154,61 +195,43 @@ Most procurement in SMEs and enterprises still runs on:
 
 Every runtime dependency below is pulled straight from `package.json` — no aspirational listings.
 
-### Frontend & UI
-| Library | Version | Role |
-|---------|---------|------|
-| `next` | 16.2.7 | Full-stack React framework (App Router, Server Actions, Route Handlers) |
-| `react` | 19.2.4 | UI library |
-| `react-dom` | 19.2.4 | React DOM renderer |
-| `typescript` | 5 | Static types across the entire codebase |
-| `tailwindcss` | 4 | Utility-first styling (CSS-first config, no `tailwind.config.js`) |
-| `@tailwindcss/postcss` | 4 | Tailwind v4 PostCSS plugin |
-| `tw-animate-css` | 1.4 | Tailwind animation utilities |
-| `shadcn` | 4.10 | Component generator (style: `base-nova`) |
-| `@base-ui/react` | 1.5 | Unstyled accessible primitives (Popover, Dialog, Select, Menu, Tabs, etc.) |
-| `@tabler/icons-react` | 3.44 | Tabler icon set (icon library chosen in `components.json`) |
-| `next-themes` | 0.4 | Dark / light theme switching |
-| `motion` | 12.40 | UI animations (Framer Motion successor) |
-| `gsap` | 3.15 | Scroll-driven and landing-page animations |
-| `recharts` | 3.8 | Procurement analytics charts (composed, bar, pie) |
-| `react-day-picker` | 10.0 | Date-range picker for the reports/analytics filters |
-| `sonner` | 2.0 | Toast notifications |
-| `cmdk` | 1.1 | Command palette / fuzzy search primitives |
+### Frontend
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js | 16.2 | Full-stack React framework (App Router + Server Actions) |
+| React | 19 | UI library |
+| TypeScript | 5 | Type safety across the entire codebase |
+| Tailwind CSS | v4 | Utility-first styling |
+| shadcn/ui | 4.10 | Accessible component library (Base UI primitives, Tabler icons) |
+| @base-ui/react | 1.5 | Unstyled accessible UI primitives (Popover, Dialog, Select, etc.) |
+| @tabler/icons-react | 3.44 | Icon set used across the UI |
+| Recharts | 3.8 | Procurement analytics charts |
+| @react-pdf/renderer | 4.5 | Client & server PDF generation |
+| Motion | 12.40 | UI animations (Framer Motion successor) |
+| GSAP | 3.15 | Scroll-driven and landing-page animations |
+| react-day-picker | 10.0 | Date-range picker for reports & filters |
+| React Hook Form + Zod | 7.77 / 3.25 | Form management & schema validation |
+| next-themes | 0.4 | Dark / light mode |
+| sonner | 2.0 | Toast notifications |
 
-### Forms, Validation & Schema
-| Library | Version | Role |
-|---------|---------|------|
-| `react-hook-form` | 7.77 | Form state management |
-| `@hookform/resolvers` | 5.4 | Bridges RHF to validation libraries |
-| `zod` | 3.25 | Runtime schema validation (single source of truth for inputs) |
-| `@react-pdf/renderer` | 4.5 | Client + server PDF generation for invoices |
+### Backend & Data
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| Next.js Server Actions | — | API layer (no separate Express server) |
+| NextAuth v5 | 5.0-beta | Authentication, session management, JWT |
+| Prisma | 6.19 | ORM, schema management, migrations |
+| PostgreSQL | any | Primary relational database (Supabase recommended) |
+| bcryptjs | 3.0 | Password hashing |
+| Nodemailer | 7.0 | Email delivery (with Resend as the transactional provider) |
+| nanoid | 5.1 | Unique ID generation |
+| cmdk | 1.1 | Command palette / fuzzy search primitives |
 
-### Auth, Data & Server
-| Library | Version | Role |
-|---------|---------|------|
-| `next-auth` | 5.0.0-beta.31 | Authentication, session management (JWT strategy) |
-| `@auth/prisma-adapter` | 2.11 | NextAuth Prisma adapter |
-| `@prisma/client` | 6.19 | Typed database client |
-| `prisma` (dev) | 6.19 | Schema, migrations, seeding |
-| `bcryptjs` | 3.0 | Password hashing |
-| `nodemailer` | 7.0 | Email transport (Resend in production, console in dev) |
-| `nanoid` | 5.1 | Compact unique ID generation |
-| `date-fns` | 4.4 | Date math for billing cycles, RFQ deadlines, reports bucketing |
-
-### Styling Utilities
-| Library | Version | Role |
-|---------|---------|------|
-| `clsx` | 2.1 | Conditional class names |
-| `tailwind-merge` | 3.6 | Resolves conflicting Tailwind classes |
-| `class-variance-authority` | 0.7 | Type-safe variant-driven component APIs (shadcn/ui pattern) |
-| `sharp` (dev) | 0.34 | Image optimization (Next.js dependency) |
-
-### Real-Time & Infra
-| Library / Service | Version | Role |
-|-------------------|---------|------|
-| Cloudflare Workers + Durable Objects | — | WebSocket hub hosting the `WebSocketHub` DO (see API Guide §3) |
-| Resend | — | Transactional email (invoice delivery, password reset, RFQ invites) |
-| Vercel | — | Frontend + serverless deployment |
+### Infrastructure
+| Technology | Purpose |
+|------------|---------|
+| Cloudflare Workers + Durable Objects | Real-time WebSocket hub for live notifications |
+| Resend | Transactional email (invoice delivery, password reset, RFQ invites) |
+| Vercel | Frontend + serverless deployment |
 
 ---
 
@@ -828,6 +851,17 @@ MIT © 2026 Team Qubits
 
 ---
 
-**Built with 🔥 for the VendorBridge Hackathon**
+<p align="center">
+  <strong>Built with 🔥 by <a href="#-meet-the-team--qubits">Ridham Patel</a>, <a href="#-meet-the-team--qubits">Hemant Pande</a>, <a href="#-meet-the-team--qubits">Hetvi Hinsu</a> & <a href="#-meet-the-team--qubits">Honey Modha</a></strong><br />
+  <sub>for the VendorBridge Hackathon · 2026</sub>
+</p>
 
-*If this project helped you, drop a ⭐ — it means the world to us.*
+<p align="center">
+  <a href="https://qubits-vendorbridge.vercel.app/">🌐 Live Demo</a> ·&nbsp;
+  <a href="https://drive.google.com/drive/folders/1gBJKo1zdwdNFESWovjr5WOMfv2PXCQX_?usp=sharing">🎥 Video Walkthrough</a> ·&nbsp;
+  <a href="https://app.excalidraw.com/l/65VNwvy7c4X/5ywnm0v3qhK">🗺️ Architecture Map</a>
+</p>
+
+<p align="center">
+  <em>If this project helped you, drop a ⭐ — it means the world to us.</em>
+</p>
