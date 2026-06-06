@@ -36,19 +36,19 @@ Built with ❤️ by a team of four. Every byte of this ERP, from database schem
   <tr>
     <td align="center" width="25%">
       <strong>🧑‍💻 Ridham Patel</strong><br />
-      <sub>Full-Stack · Architecture · DevOps</sub>
+      <sub>Full-Stack · Cloud · Architecture · DevOps</sub>
     </td>
     <td align="center" width="25%">
       <strong>🧑‍💻 Hemant Pande</strong><br />
-      <sub>Full-Stack · UI/UX · Frontend</sub>
-    </td>
-    <td align="center" width="25%">
-      <strong>👩‍💻 Hetvi Hinsu</strong><br />
       <sub>Full-Stack · Schema · Integrations</sub>
     </td>
     <td align="center" width="25%">
-      <strong>👩‍💻 Honey Modha</strong><br />
+      <strong>👩‍💻 Hetvi Hinsu</strong><br />
       <sub>Full-Stack · QA · Documentation</sub>
+    </td>
+    <td align="center" width="25%">
+      <strong>👩‍💻 Honey Modha</strong><br />
+      <sub>Full-Stack · UI/UX · Frontend</sub>
     </td>
   </tr>
 </table>

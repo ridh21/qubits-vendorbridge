@@ -6,6 +6,7 @@ import { Hero } from "@/components/landing/hero"
 import { Marquee } from "@/components/landing/marquee"
 import { FeaturesBento } from "@/components/landing/features-bento"
 import { Workflow } from "@/components/landing/workflow"
+import { Team } from "@/components/landing/team"
 import { FAQ } from "@/components/landing/faq"
 import { CTA } from "@/components/landing/cta"
 import { LandingFooter } from "@/components/landing/landing-footer"
@@ -22,6 +23,7 @@ export default async function LandingPage() {
         <Marquee />
         <FeaturesBento />
         <Workflow />
+        <Team />
         <FAQ />
         <CTA />
       </main>
