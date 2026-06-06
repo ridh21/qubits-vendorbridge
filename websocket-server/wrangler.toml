@@ -12,9 +12,10 @@ tag = "v1"
 new_sqlite_classes = ["WebSocketHub"]
 
 [vars]
-# Shared secret used by the Next.js app to authenticate /notify webhooks.
-# Override in production with `wrangler secret put WEBHOOK_SECRET`.
-WEBHOOK_SECRET = "vb_dev_secret_change_me"
-
 # Comma-separated allowed origins for CORS.
 ALLOWED_ORIGINS = "http://localhost:3000,https://qubits-vendorbridge.vercel.app"
+
+# `WEBHOOK_SECRET` is configured as a Wrangler secret, not a plain-text var.
+# Upload it once with:
+#   echo "<value>" | wrangler secret put WEBHOOK_SECRET
+# (Don't add it here — Cloudflare rejects same-name var + secret bindings.)

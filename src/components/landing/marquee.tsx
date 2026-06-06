@@ -2,21 +2,26 @@
 
 import { FadeUp } from "@/components/landing/motion"
 
-// Real-world brands frequently cited in procurement / B2B SaaS reference lists.
-// Rendered as wordmarks (typographic logos) — no third-party image assets needed.
-const COMPANIES = [
-  { name: "Tata", style: "font-serif italic" },
-  { name: "Reliance", style: "font-light tracking-tight" },
-  { name: "Infosys", style: "font-semibold tracking-tighter" },
-  { name: "Wipro", style: "font-bold uppercase tracking-[0.2em] text-xs md:text-sm" },
-  { name: "Mahindra", style: "font-extrabold tracking-tight" },
-  { name: "L&T", style: "font-black tracking-[0.05em]" },
-  { name: "Maruti Suzuki", style: "font-medium italic" },
-  { name: "Bajaj", style: "font-extrabold tracking-tighter" },
-  { name: "Asian Paints", style: "font-medium tracking-tight" },
-  { name: "ITC", style: "font-semibold tracking-[0.18em] uppercase text-xs md:text-sm" },
-  { name: "Godrej", style: "font-bold tracking-tight" },
-  { name: "JSW", style: "font-black tracking-tighter italic" },
+type Company = {
+  name: string
+  src: string
+  alt: string
+  heightClass: string
+}
+
+const COMPANIES: Company[] = [
+  { name: "Tata", src: "/logos/tata.svg", alt: "Tata Group logo", heightClass: "h-8 md:h-10" },
+  { name: "Reliance", src: "/logos/reliance.png", alt: "Reliance Industries logo", heightClass: "h-8 md:h-10" },
+  { name: "Infosys", src: "/logos/infosys.svg", alt: "Infosys logo", heightClass: "h-7 md:h-8" },
+  { name: "Wipro", src: "/logos/wipro.svg", alt: "Wipro logo", heightClass: "h-8 md:h-10" },
+  { name: "Mahindra", src: "/logos/mahindra.svg", alt: "Mahindra Group logo", heightClass: "h-8 md:h-10" },
+  { name: "L&T", src: "/logos/lt.svg", alt: "Larsen & Toubro logo", heightClass: "h-8 md:h-10" },
+  { name: "Maruti Suzuki", src: "/logos/maruti-suzuki.svg", alt: "Maruti Suzuki logo", heightClass: "h-6 md:h-7" },
+  { name: "Bajaj", src: "/logos/bajaj.svg", alt: "Bajaj Group logo", heightClass: "h-8 md:h-10" },
+  { name: "Asian Paints", src: "/logos/asian-paints.svg", alt: "Asian Paints logo", heightClass: "h-8 md:h-10" },
+  { name: "ITC", src: "/logos/itc.svg", alt: "ITC Limited logo", heightClass: "h-7 md:h-9" },
+  { name: "Godrej", src: "/logos/godrej.svg", alt: "Godrej Group logo", heightClass: "h-8 md:h-10" },
+  { name: "JSW", src: "/logos/jsw.svg", alt: "JSW Group logo", heightClass: "h-7 md:h-9" },
 ]
 
 export function Marquee() {
@@ -54,9 +59,16 @@ export function Marquee() {
             {[...COMPANIES, ...COMPANIES].map((c, i) => (
               <div
                 key={`${c.name}-${i}`}
-                className={`inline-flex items-center px-10 text-2xl md:text-3xl text-zinc-400 hover:text-zinc-950 transition-colors ${c.style}`}
+                className="inline-flex items-center justify-center px-8 md:px-10"
+                title={c.name}
               >
-                {c.name}
+                <img
+                  src={c.src}
+                  alt={c.alt}
+                  loading={i < COMPANIES.length ? "eager" : "lazy"}
+                  decoding="async"
+                  className={`${c.heightClass} w-auto max-w-[160px] object-contain grayscale opacity-60 transition-[filter,opacity] duration-300 hover:grayscale-0 hover:opacity-100`}
+                />
               </div>
             ))}
           </div>
@@ -67,8 +79,9 @@ export function Marquee() {
         .vb-marquee { width: 100%; overflow: hidden; }
         .vb-marquee__track {
           display: inline-flex;
+          align-items: center;
           white-space: nowrap;
-          animation: vb-marquee-scroll 42s linear infinite;
+          animation: vb-marquee-scroll 48s linear infinite;
         }
         @keyframes vb-marquee-scroll {
           from { transform: translateX(0); }
