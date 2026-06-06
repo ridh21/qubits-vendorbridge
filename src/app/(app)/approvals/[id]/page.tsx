@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { format, formatDistanceToNow } from "date-fns"
+import { format } from "date-fns"
 import { IconArrowLeft } from "@tabler/icons-react"
 
 import { PageHeader } from "@/components/layout/page-header"
@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/table"
 import { StatusBadge } from "@/components/common/status-badge"
 import { ApprovalDecisionButtons } from "@/components/approvals/approval-decision-buttons"
+import { ApprovalTimeline } from "@/components/approvals/approval-timeline"
 import { prisma } from "@/lib/prisma"
 import { requireRole } from "@/lib/rbac"
 import { formatCurrency } from "@/lib/money"
@@ -51,6 +52,11 @@ export default async function ApprovalDetailPage({
       ],
     },
     orderBy: { createdAt: "asc" },
+    include: {
+      user: {
+        select: { name: true, vendor: { select: { name: true } } },
+      },
+    },
   })
 
   return (
@@ -78,6 +84,13 @@ export default async function ApprovalDetailPage({
           </>
         }
       />
+
+      <div className="mb-4">
+        <ApprovalTimeline
+          entries={timeline}
+          decision={approval.status as "PENDING" | "APPROVED" | "REJECTED"}
+        />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-4">
@@ -118,8 +131,30 @@ export default async function ApprovalDetailPage({
                 </TableBody>
                 <TableFooter>
                   <TableRow>
+                    <TableCell colSpan={3} className="text-right text-muted-foreground">
+                      Subtotal
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCurrency((() => {
+                        const sub = approval.quotation.lines.reduce((s, l) => s + l.lineTotal, 0)
+                        return sub
+                      })())}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-right text-muted-foreground">
+                      GST (18%)
+                    </TableCell>
+                    <TableCell className="text-right tabular-nums">
+                      {formatCurrency((() => {
+                        const sub = approval.quotation.lines.reduce((s, l) => s + l.lineTotal, 0)
+                        return Math.round((sub * 18) / 100)
+                      })())}
+                    </TableCell>
+                  </TableRow>
+                  <TableRow>
                     <TableCell colSpan={3} className="text-right font-medium">
-                      Total
+                      Grand Total <span className="text-xs font-normal text-muted-foreground">(incl. GST)</span>
                     </TableCell>
                     <TableCell className="text-right font-semibold tabular-nums">
                       {formatCurrency(approval.quotation.totalAmount)}
@@ -199,27 +234,24 @@ export default async function ApprovalDetailPage({
           )}
         </div>
 
-        <Card className="lg:col-span-1">
-          <CardHeader>
-            <CardTitle>Timeline</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {timeline.length === 0 && (
-              <p className="text-sm text-muted-foreground">No activity yet.</p>
-            )}
-            {timeline.map((t) => (
-              <div
-                key={t.id}
-                className="border-l-2 border-zinc-200 pl-3 text-sm space-y-0.5"
-              >
-                <p className="font-medium">{t.message}</p>
+        <div className="lg:col-span-1 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Vendor</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-1">
+              <p className="font-medium">{approval.quotation.vendor.name}</p>
+              <p className="text-xs text-muted-foreground">
+                {approval.quotation.vendor.contactEmail}
+              </p>
+              {approval.quotation.vendor.contactPhone && (
                 <p className="text-xs text-muted-foreground">
-                  {t.action} · {formatDistanceToNow(t.createdAt, { addSuffix: true })}
+                  {approval.quotation.vendor.contactPhone}
                 </p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )

@@ -79,7 +79,12 @@ export async function forgotPasswordAction(
   const email = parsed.data.email.toLowerCase()
   const user = await prisma.user.findUnique({ where: { email } })
   // Always return success to avoid leaking which emails exist
-  if (!user) return { ok: true, message: "Check your email for a reset link" }
+  if (!user) {
+    console.warn(
+      `[forgot-password] no user found for "${email}" — returning success without sending mail (security policy). If you expected mail, ensure the email exists in the users table.`,
+    )
+    return { ok: true, message: "Check your email for a reset link" }
+  }
 
   const token = randomBytes(32).toString("hex")
   const tokenHash = createHash("sha256").update(token).digest("hex")

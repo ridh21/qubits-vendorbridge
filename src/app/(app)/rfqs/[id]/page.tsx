@@ -172,7 +172,7 @@ export default async function RfqDetailPage({
                   <TableHead>Code</TableHead>
                   <TableHead>Vendor</TableHead>
                   <TableHead>Delivery</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
+                  <TableHead className="text-right">Total <span className="text-xs font-normal text-muted-foreground">(incl. GST)</span></TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Submitted</TableHead>
                 </TableRow>

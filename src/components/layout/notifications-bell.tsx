@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import Link from "next/link"
 import { IconBell } from "@tabler/icons-react"
 import { formatDistanceToNow } from "date-fns"
@@ -28,16 +28,43 @@ export function NotificationsBell() {
   const [items, setItems] = useState<Notif[]>([])
   const [unread, setUnread] = useState(0)
   const [pending, start] = useTransition()
+  const audioRef = useRef<HTMLAudioElement | null>(null)
+  const lastTopIdRef = useRef<string | null>(null)
+  const seededRef = useRef(false)
+
+  const playPing = () => {
+    const a = audioRef.current
+    if (!a) return
+    try {
+      a.currentTime = 0
+      void a.play().catch(() => {})
+    } catch {}
+  }
 
   const refresh = () =>
     listMyNotifications(15).then((d) => {
-      setItems(d.items as Notif[])
+      const next = d.items as Notif[]
+      const topId = next[0]?.id ?? null
+
+      if (!seededRef.current) {
+        // First load: don't play, just record current top id.
+        seededRef.current = true
+      } else if (topId && topId !== lastTopIdRef.current && d.unread > 0) {
+        playPing()
+      }
+      lastTopIdRef.current = topId
+
+      setItems(next)
       setUnread(d.unread)
     })
 
   useEffect(() => {
+    audioRef.current = new Audio("/notification.mp3")
+    audioRef.current.preload = "auto"
+    audioRef.current.volume = 0.6
+
     refresh()
-    const id = window.setInterval(refresh, 60000)
+    const id = window.setInterval(refresh, 15000)
     return () => window.clearInterval(id)
   }, [])
 

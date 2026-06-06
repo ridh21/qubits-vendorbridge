@@ -2,7 +2,6 @@ import { notFound } from "next/navigation"
 import { format } from "date-fns"
 
 import { PageHeader } from "@/components/layout/page-header"
-import { Card, CardContent } from "@/components/ui/card"
 import { StatusBadge } from "@/components/common/status-badge"
 import { QuotationForm } from "@/components/quotations/quotation-form"
 import { prisma } from "@/lib/prisma"
@@ -53,18 +52,20 @@ export default async function QuotationDetailPage({
       />
 
       {quotation.rfq.description && (
-        <Card className="mb-4">
-          <CardContent className="pt-6 text-sm text-muted-foreground">
+        <div className="mb-5 rounded-lg border border-slate-200 bg-slate-50/60 px-4 py-2.5">
+          <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold mb-0.5">
+            RFQ brief
+          </p>
+          <p className="text-sm text-[#0D2A41] leading-relaxed">
             {quotation.rfq.description}
-          </CardContent>
-        </Card>
+          </p>
+        </div>
       )}
 
       <QuotationForm
         quotationId={quotation.id}
         rfqItems={quotation.rfq.items}
         defaultLines={quotation.lines}
-        deliveryDays={quotation.deliveryDays}
         notes={quotation.notes ?? ""}
         readOnly={readOnly}
       />

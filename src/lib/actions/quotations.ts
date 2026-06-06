@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { requireUser, requireRole } from "@/lib/rbac"
 import { logActivity, notify } from "@/lib/activity"
 import { nextCode } from "@/lib/codes"
-import { toPaise } from "@/lib/money"
+import { toPaise, computeTotals, DEFAULT_TAX_RATE } from "@/lib/money"
 import { quotationSchema, type QuotationInput } from "@/lib/validation/rfq"
 
 export async function listInvitationsForVendor(vendorId: string) {
@@ -90,7 +90,7 @@ export async function saveQuotation(
   const parsed = quotationSchema.parse(input)
   const existing = await prisma.quotation.findUnique({
     where: { id: quotationId },
-    include: { rfq: true },
+    include: { rfq: true, vendor: { select: { name: true } } },
   })
   if (!existing) throw new Error("Quotation not found")
   if (user.role === "VENDOR" && existing.vendorId !== user.vendorId) {
@@ -110,18 +110,24 @@ export async function saveQuotation(
       unitPrice: unit,
       quantity: l.quantity,
       lineTotal: unit * l.quantity,
+      deliveryDays: l.deliveryDays,
     }
   })
-  const total = linesData.reduce((s, l) => s + l.lineTotal, 0)
+  const totals = computeTotals(linesData, DEFAULT_TAX_RATE)
+  // Overall delivery is bottlenecked by the slowest line item.
+  const overallDeliveryDays = linesData.reduce(
+    (max, l) => Math.max(max, l.deliveryDays),
+    0,
+  )
 
   await prisma.$transaction([
     prisma.quotationLine.deleteMany({ where: { quotationId } }),
     prisma.quotation.update({
       where: { id: quotationId },
       data: {
-        deliveryDays: parsed.deliveryDays,
+        deliveryDays: overallDeliveryDays,
         notes: parsed.notes || null,
-        totalAmount: total,
+        totalAmount: totals.grandTotal,
         status: submit ? "SUBMITTED" : "DRAFT",
         submittedAt: submit ? new Date() : null,
         lines: { create: linesData },
@@ -133,6 +139,7 @@ export async function saveQuotation(
     }),
   ])
 
+  const actorLabel = `${user.name ?? "Unknown user"} (${existing.vendor.name})`
   await logActivity({
     userId: user.id,
     actorRole: user.role,
@@ -140,8 +147,8 @@ export async function saveQuotation(
     entityId: quotationId,
     action: submit ? "submitted" : "saved",
     message: submit
-      ? `${existing.code} submitted`
-      : `${existing.code} draft saved`,
+      ? `${existing.code} submitted by ${actorLabel}`
+      : `${existing.code} draft saved by ${actorLabel}`,
   })
 
   if (submit) {
@@ -170,7 +177,10 @@ export async function openOrCreateQuotation(rfqId: string, vendorId: string) {
 
 export async function withdrawQuotation(quotationId: string) {
   const user = await requireUser()
-  const q = await prisma.quotation.findUnique({ where: { id: quotationId } })
+  const q = await prisma.quotation.findUnique({
+    where: { id: quotationId },
+    include: { vendor: { select: { name: true } } },
+  })
   if (!q) throw new Error("Not found")
   if (user.role === "VENDOR" && q.vendorId !== user.vendorId) {
     throw new Error("Forbidden")
@@ -185,7 +195,7 @@ export async function withdrawQuotation(quotationId: string) {
     entityType: "Quotation",
     entityId: quotationId,
     action: "withdrawn",
-    message: `${q.code} withdrawn`,
+    message: `${q.code} withdrawn by ${user.name ?? "Unknown user"} (${q.vendor.name})`,
   })
   revalidatePath(`/quotations`)
   revalidatePath(`/rfqs/${q.rfqId}`)

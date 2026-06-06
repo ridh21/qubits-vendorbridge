@@ -20,7 +20,6 @@ export const rfqSchema = z.object({
 export type RfqInput = z.infer<typeof rfqSchema>
 
 export const quotationSchema = z.object({
-  deliveryDays: z.coerce.number().int().nonnegative(),
   notes: z.string().optional().or(z.literal("")),
   lines: z
     .array(
@@ -28,6 +27,7 @@ export const quotationSchema = z.object({
         rfqItemId: z.string(),
         unitPrice: z.coerce.number().nonnegative(),
         quantity: z.coerce.number().int().nonnegative(),
+        deliveryDays: z.coerce.number().int().nonnegative(),
       }),
     )
     .min(1),

@@ -1,8 +1,8 @@
 "use client"
 
+import Image from "next/image"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { IconBuildingStore } from "@tabler/icons-react"
 import type { Role } from "@prisma/client"
 
 import {
@@ -36,11 +36,18 @@ export function AppSidebar({
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" render={<Link href="/dashboard" />}>
-              <div className="bg-zinc-950 text-white flex aspect-square size-8 items-center justify-center rounded-lg">
-                <IconBuildingStore className="size-4" />
-              </div>
+              <Image
+                src="/logo.png"
+                alt="VendorBridge"
+                width={36}
+                height={24}
+                className="object-contain shrink-0"
+                priority
+              />
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-semibold">VendorBridge</span>
+                <span className="truncate font-semibold text-[#0D2A41]">
+                  VendorBridge
+                </span>
                 <span className="truncate text-xs text-muted-foreground">
                   {ROLE_LABELS[role]}
                 </span>

@@ -7,9 +7,7 @@ import { prisma } from "@/lib/prisma"
 import { requireRole, requireUser } from "@/lib/rbac"
 import { logActivity, notify } from "@/lib/activity"
 import { nextCode } from "@/lib/codes"
-import { computeTotals } from "@/lib/money"
-
-const DEFAULT_TAX_RATE = 18
+import { computeTotals, DEFAULT_TAX_RATE } from "@/lib/money"
 
 export async function listInvoices(opts: { vendorId?: string } = {}) {
   return prisma.invoice.findMany({

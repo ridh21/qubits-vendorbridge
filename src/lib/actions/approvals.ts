@@ -12,6 +12,7 @@ export async function shortlistQuotation(quotationId: string) {
   const q = await prisma.quotation.update({
     where: { id: quotationId },
     data: { status: "SHORTLISTED" },
+    include: { vendor: { select: { name: true } } },
   })
   await logActivity({
     userId: user.id,
@@ -19,7 +20,7 @@ export async function shortlistQuotation(quotationId: string) {
     entityType: "Quotation",
     entityId: quotationId,
     action: "shortlisted",
-    message: `${q.code} shortlisted`,
+    message: `${q.code} (${q.vendor.name}) shortlisted by ${user.name ?? "Procurement Officer"}`,
   })
   revalidatePath(`/rfqs/${q.rfqId}`)
   revalidatePath(`/rfqs/${q.rfqId}/compare`)
@@ -32,7 +33,7 @@ export async function submitForApproval(quotationId: string) {
 
   const q = await prisma.quotation.findUnique({
     where: { id: quotationId },
-    include: { rfq: true },
+    include: { rfq: true, vendor: { select: { name: true } } },
   })
   if (!q) throw new Error("Quotation not found")
   if (q.status !== "SHORTLISTED" && q.status !== "SUBMITTED") {
@@ -53,7 +54,7 @@ export async function submitForApproval(quotationId: string) {
     entityType: "Approval",
     entityId: quotationId,
     action: "requested",
-    message: `Approval requested for ${q.code} (${q.rfq.code})`,
+    message: `Approval requested for ${q.code} — ${q.vendor.name} (RFQ ${q.rfq.code}) by ${user.name ?? "Procurement Officer"}`,
   })
 
   const managers = await prisma.user.findMany({
@@ -81,7 +82,11 @@ export async function decideApproval(
   const user = await requireRole(["ADMIN", "MANAGER"])
   const approval = await prisma.approval.findUnique({
     where: { id: approvalId },
-    include: { quotation: { include: { rfq: true } } },
+    include: {
+      quotation: {
+        include: { rfq: true, vendor: { select: { name: true } } },
+      },
+    },
   })
   if (!approval) throw new Error("Not found")
   if (approval.status !== "PENDING") throw new Error("Already decided")
@@ -119,7 +124,7 @@ export async function decideApproval(
     entityType: "Approval",
     entityId: approvalId,
     action: decision.toLowerCase(),
-    message: `${approval.quotation.code} ${decision.toLowerCase()} — ${remarks}`,
+    message: `${approval.quotation.code} (${approval.quotation.vendor.name}) ${decision.toLowerCase()} by ${user.name ?? "Manager"} — ${remarks}`,
   })
 
   const officers = await prisma.user.findMany({

@@ -1,3 +1,5 @@
+import { DEFAULT_TAX_RATE } from "@/lib/money"
+
 export type CompareRow = {
   itemId: string
   itemName: string
@@ -11,6 +13,8 @@ export type CompareRow = {
 
 export type CompareSummary = {
   vendorId: string
+  subtotal: number
+  gstAmount: number
   total: number
   deliveryDays: number
   rating: number
@@ -56,15 +60,24 @@ export function buildComparison(
     }
   })
 
-  const summaries: CompareSummary[] = quotations.map((q) => ({
-    vendorId: q.vendorId,
-    total: q.totalAmount,
-    deliveryDays: q.deliveryDays,
-    rating: q.vendor.rating,
-    quotationId: q.id,
-    quotationCode: q.code,
-    status: q.status,
-  }))
+  const summaries: CompareSummary[] = quotations.map((q) => {
+    const subtotal = q.lines.reduce(
+      (sum, l) => sum + l.unitPrice * l.quantity,
+      0,
+    )
+    const gstAmount = Math.round((subtotal * DEFAULT_TAX_RATE) / 100)
+    return {
+      vendorId: q.vendorId,
+      subtotal,
+      gstAmount,
+      total: q.totalAmount,
+      deliveryDays: q.deliveryDays,
+      rating: q.vendor.rating,
+      quotationId: q.id,
+      quotationCode: q.code,
+      status: q.status,
+    }
+  })
 
   const lowestTotalVendorId =
     summaries.reduce<{ id: string | null; total: number }>(

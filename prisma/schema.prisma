@@ -225,6 +225,7 @@ model QuotationLine {
   unitPrice    Int      @default(0) // in paise/cents
   quantity     Int      @default(0)
   lineTotal    Int      @default(0)
+  deliveryDays Int      @default(0)
 
   quotation    Quotation @relation(fields: [quotationId], references: [id], onDelete: Cascade)
   rfqItem      RfqItem   @relation(fields: [rfqItemId], references: [id], onDelete: Cascade)
@@ -335,4 +336,16 @@ model CodeSequence {
   prefix String @id
   year   Int
   value  Int    @default(0)
+}
+
+model DemoRequest {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  company   String
+  teamSize  String?
+  message   String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
 }

@@ -1,5 +1,8 @@
 // Money stored in paise/cents to avoid float drift.
 
+/** GST rate applied across quotations, POs, and invoices. */
+export const DEFAULT_TAX_RATE = 18
+
 export function toPaise(rupees: number | string) {
   const n = typeof rupees === "string" ? parseFloat(rupees) : rupees
   if (!Number.isFinite(n)) return 0

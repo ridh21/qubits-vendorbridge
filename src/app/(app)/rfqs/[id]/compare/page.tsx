@@ -12,7 +12,7 @@ import { QuotationActionsCell } from "@/components/approvals/quotation-actions-c
 import { getRfq } from "@/lib/actions/rfqs"
 import { requireRole } from "@/lib/rbac"
 import { buildComparison } from "@/lib/compare"
-import { formatCurrency } from "@/lib/money"
+import { formatCurrency, DEFAULT_TAX_RATE } from "@/lib/money"
 import { cn } from "@/lib/utils"
 
 export default async function CompareQuotationsPage({
@@ -66,9 +66,14 @@ export default async function CompareQuotationsPage({
           </span>
         }
         actions={
-          <Button variant="ghost" render={<Link href={`/rfqs/${rfq.id}`} />}>
-            <IconArrowLeft className="size-4" /> Back to RFQ
-          </Button>
+          <div className="flex items-center gap-2">
+            <Badge className="bg-amber-100 text-amber-800 border-amber-200 text-xs">
+              All totals include {DEFAULT_TAX_RATE}% GST
+            </Badge>
+            <Button variant="ghost" render={<Link href={`/rfqs/${rfq.id}`} />}>
+              <IconArrowLeft className="size-4" /> Back to RFQ
+            </Button>
+          </div>
         }
       />
 
@@ -148,8 +153,45 @@ export default async function CompareQuotationsPage({
                 })}
               </tr>
             ))}
+            <tr className="border-b">
+              <td className="sticky left-0 bg-background p-3 text-muted-foreground">
+                Subtotal
+              </td>
+              {summaries.map((s) => (
+                <td
+                  key={s.vendorId}
+                  className={cn(
+                    "p-3 tabular-nums text-muted-foreground",
+                    s.vendorId === lowestTotalVendorId && "bg-emerald-50/60",
+                  )}
+                >
+                  {formatCurrency(s.subtotal)}
+                </td>
+              ))}
+            </tr>
+            <tr className="border-b">
+              <td className="sticky left-0 bg-background p-3 text-muted-foreground">
+                GST ({DEFAULT_TAX_RATE}%)
+              </td>
+              {summaries.map((s) => (
+                <td
+                  key={s.vendorId}
+                  className={cn(
+                    "p-3 tabular-nums text-muted-foreground",
+                    s.vendorId === lowestTotalVendorId && "bg-emerald-50/60",
+                  )}
+                >
+                  {formatCurrency(s.gstAmount)}
+                </td>
+              ))}
+            </tr>
             <tr className="border-b font-medium">
-              <td className="sticky left-0 bg-background p-3">Total</td>
+              <td className="sticky left-0 bg-background p-3">
+                Grand Total{" "}
+                <span className="text-xs font-normal text-muted-foreground">
+                  (incl. GST)
+                </span>
+              </td>
               {summaries.map((s) => (
                 <td
                   key={s.vendorId}

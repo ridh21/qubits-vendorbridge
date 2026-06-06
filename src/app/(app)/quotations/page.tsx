@@ -41,14 +41,13 @@ export default async function QuotationsPage() {
                 <TableHead>RFQ</TableHead>
                 <TableHead>Deadline</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Total</TableHead>
                 <TableHead></TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {invitations.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center py-12 text-muted-foreground">
+                  <TableCell colSpan={4} className="text-center py-12 text-muted-foreground">
                     No invitations yet.
                   </TableCell>
                 </TableRow>
@@ -75,9 +74,6 @@ export default async function QuotationsPage() {
                     </TableCell>
                     <TableCell>
                       <StatusBadge status={quotation?.status ?? "INVITED"} />
-                    </TableCell>
-                    <TableCell className="text-right">
-                      {quotation ? formatCurrency(quotation.totalAmount) : "—"}
                     </TableCell>
                     <TableCell className="text-right">
                       <StopPropagation>
