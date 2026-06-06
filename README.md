@@ -20,7 +20,7 @@
 - [Problem Statement](#-problem-statement)
 - [What VendorBridge Does](#-what-vendorbridge-does)
 - [Architecture](#️-architecture)
-- [Tech Stack](#-tech-stack)
+- [Libraries & Tech Stack](#-libraries--tech-stack)
 - [Data Model](#️-data-model)
 - [User Roles & Permissions](#-user-roles--permissions)
 - [Complete User Workflow](#-complete-user-workflow)
