@@ -1,20 +1,39 @@
 import type { Metadata } from "next"
-import { Geist, Geist_Mono, Inter, Manrope } from "next/font/google"
+import localFont from "next/font/local"
 import "./globals.css"
 import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 
-const manropeHeading = Manrope({ subsets: ["latin"], variable: "--font-heading" })
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" })
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-})
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const abcDiatype = localFont({
+  src: [
+    {
+      path: "../../public/fonts/ABCDiatype-Thin.otf",
+      weight: "100",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ABCDiatype-Light.otf",
+      weight: "300",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ABCDiatype-Regular.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ABCDiatype-Medium.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "../../public/fonts/ABCDiatype-Bold.otf",
+      weight: "700",
+      style: "normal",
+    },
+  ],
+  variable: "--font-sans",
+  display: "swap",
 })
 
 export const metadata: Metadata = {
@@ -32,15 +51,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={cn(
-        "h-full",
-        "antialiased",
-        geistSans.variable,
-        geistMono.variable,
-        "font-sans",
-        inter.variable,
-        manropeHeading.variable,
-      )}
+      className={cn("h-full", "antialiased", abcDiatype.variable, "font-sans")}
     >
       <body className="min-h-full flex flex-col">
         {children}
